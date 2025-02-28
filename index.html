@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>WebSocket Test</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            text-align: center;
+            background-color: #f4f4f4;
+            padding: 20px;
+        }
+        #output {
+            width: 500px;
+            height: 300px;
+            border: 1px solid #ccc;
+            padding: 10px;
+            overflow-y: auto;
+            margin: 10px auto;
+            background: white;
+            border-radius: 5px;
+            box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            flex-direction: column;
+        }
+        .message {
+            max-width: 70%;
+            padding: 8px;
+            margin: 5px;
+            border-radius: 8px;
+            word-wrap: break-word;
+        }
+        .sent {
+            background-color: lightblue;
+            align-self: flex-end;
+            text-align: right;
+        }
+        .received {
+            background-color: lightgrey;
+            align-self: flex-start;
+            text-align: left;
+        }
+        #message {
+            width: 400px;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+        button {
+            padding: 10px 15px;
+            border: none;
+            background-color: #28a745;
+            color: white;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 5px;
+        }
+        button:hover {
+            background-color: #218838;
+        }
+        .radio-group {
+            margin: 10px 0;
+        }
+        .radio-group label {
+            margin-right: 10px;
+            font-weight: bold;
+        }
+    </style>
+</head>
+<body>
+    <h2>WebSocket Test Client</h2>
+    <div class="radio-group">
+        <label>
+            <input type="radio" name="protocol" value="wss" checked> wss://
+        </label>
+        <label>
+            <input type="radio" name="protocol" value="ws"> ws://
+        </label>
+        <button onclick="connect()">Reconnect</button>
+    </div>
+    <input type="text" id="message" placeholder="Type a message...">
+    <button onclick="sendMessage()">Send</button>
+    <button onclick="closeConnection()" style="background-color: #dc3545;">Close Connection</button>
+    <div id="output"></div>
+
+    <script>
+        let ws;
+        const output = document.getElementById('output');
+
+        function log(message, type) {
+            const div = document.createElement('div');
+            div.textContent = message;
+            div.classList.add('message', type);
+            output.appendChild(div);
+            output.scrollTop = output.scrollHeight;
+        }
+
+        function getSelectedProtocol() {
+            return document.querySelector('input[name="protocol"]:checked').value;
+        }
+
+        function connect() {
+            if (ws) {
+                ws.close();
+            }
+
+            const protocol = getSelectedProtocol();
+            const url = `${protocol}://echo.websocket.org`;
+            log(`Connecting to ${url}...`, 'received');
+            ws = new WebSocket(url);
+
+            ws.onopen = function() {
+                log(`Connected to ${url}`, 'received');
+            };
+
+            ws.onmessage = function(event) {
+                log('Received: ' + event.data, 'received');
+            };
+
+            ws.onerror = function(error) {
+                log('Error: ' + error, 'received');
+            };
+
+            ws.onclose = function() {
+                log('Connection closed', 'received');
+            };
+        }
+
+        function sendMessage() {
+            const input = document.getElementById('message');
+            const message = input.value;
+            if (ws && ws.readyState === WebSocket.OPEN) {
+                ws.send(message);
+                log('Sent: ' + message, 'sent');
+                input.value = '';
+            } else {
+                log('Not connected. Please wait for connection.', 'received');
+            }
+        }
+
+        function closeConnection() {
+            if (ws) {
+                ws.close();
+            }
+        }
+
+        window.onload = connect;
+
+        document.getElementById('message').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        });
+    </script>
+</body>
+</html>
