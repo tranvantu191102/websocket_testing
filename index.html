@@ -5,17 +5,63 @@
     <style>
         body {
             font-family: Arial, sans-serif;
-            text-align: center;
+            display: flex;
+            margin: 0;
             background-color: #f4f4f4;
+        }
+        .sidebar {
+            width: 200px;
+            background: #333;
+            color: white;
+            padding: 15px;
+            height: 100vh;
+        }
+        .sidebar h3 {
+            margin: 0;
+            padding-bottom: 10px;
+            border-bottom: 1px solid white;
+        }
+        .sidebar ul {
+            list-style: none;
+            padding: 0;
+        }
+        .sidebar ul li {
+            margin-bottom: 8px;
+            transition: background 0.3s;
+        }
+        .sidebar ul li a {
+            display: block;
+            padding: 10px;
+            border-radius: 8px;
+            text-decoration: none;
+        }
+
+        .sidebar ul li a:hover {
+            background: lightgrey;
+            color: #000;
+        }
+        .sidebar ul li:hover a {
+            color: #000;
+        }
+        .sidebar ul li a.active {
+            background: lightgreen;
+            color: #000;
+        }
+        .sidebar ul li a {
+            color: white;
+            text-decoration: none;
+            display: block;
+        }
+        .content {
+            flex: 1;
             padding: 20px;
         }
         #output {
             width: 500px;
-            height: 300px;
+            height: 200px;
             border: 1px solid #ccc;
             padding: 10px;
             overflow-y: auto;
-            margin: 10px auto;
             background: white;
             border-radius: 5px;
             box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
@@ -58,31 +104,33 @@
         button:hover {
             background-color: #218838;
         }
-        .radio-group {
-            margin: 10px 0;
-        }
-        .radio-group label {
-            margin-right: 10px;
-            font-weight: bold;
-        }
     </style>
 </head>
 <body>
-    <h2>WebSocket Test Client</h2>
-    <div class="radio-group">
-        <label>
-            <input type="radio" name="protocol" value="wss" checked> wss://
-        </label>
-        <label>
-            <input type="radio" name="protocol" value="ws"> ws://
-        </label>
-        <button onclick="connect()">Reconnect</button>
+    <div class="sidebar">
+        <h3>Test Cases</h3>
+        <ul>
+            <li><a href="index.html" class="active">Test Case 1</a></li>
+            <li><a href="testcase2.html">Test Case 2</a></li>
+            <li><a href="testcase3.html">Test Case 3</a></li>
+        </ul>
     </div>
-    <input type="text" id="message" placeholder="Type a message...">
-    <button onclick="sendMessage()">Send</button>
-    <button onclick="closeConnection()" style="background-color: #dc3545;">Close Connection</button>
-    <div id="output"></div>
-
+    <div class="content">
+        <h2>WebSocket Test Client</h2>
+        <div class="radio-group">
+            <label>
+                <input type="radio" name="protocol" value="wss" checked> wss://
+            </label>
+            <label>
+                <input type="radio" name="protocol" value="ws"> ws://
+            </label>
+            <button onclick="connect()">Reconnect</button>
+        </div>
+        <input type="text" id="message" placeholder="Type a message...">
+        <button onclick="sendMessage()">Send</button>
+        <button onclick="closeConnection()" style="background-color: #dc3545;">Close Connection</button>
+        <div id="output"></div>
+    </div>
     <script>
         let ws;
         const output = document.getElementById('output');
@@ -144,7 +192,21 @@
             }
         }
 
-        window.onload = connect;
+        function setActiveTestCase() {
+            const links = document.querySelectorAll(".sidebar ul li");
+            const currentPath = window.location.pathname;
+            links.forEach(li => {
+                const anchor = li.querySelector("a");
+                if (anchor && anchor.getAttribute("href") === currentPath.split("/").pop()) {
+                    li.classList.add("active");
+                }
+            });
+        }
+
+        window.onload = function() {
+            connect();
+            setActiveTestCase();
+        };
 
         document.getElementById('message').addEventListener('keypress', function(e) {
             if (e.key === 'Enter') {
